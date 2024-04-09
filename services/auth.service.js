@@ -2,6 +2,7 @@ const { mongoConfig, tokenSec } = require("../config");
 const MongoDB = require("./mongoDB.service");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
 const userRegistration = async (user) => {
   try {
     if (!user?.username || !user?.password || !user?.email)
@@ -81,4 +82,45 @@ const userLogin = async (user) => {
     };
   }
 };
-module.exports = { userRegistration, userLogin };
+const tokenVerification = async (req, res, next) => {
+  console.log(
+    `authentication.service | tokenVerification | ${req?.originalUrl}`
+  );
+  try {
+    if (
+      req?.originalUrl.includes("/login") ||
+      req?.originalUrl.includes("/getUser") ||
+      req?.originalUrl.includes("/register")
+    )
+      return next();
+    let token = req?.headers["authorization"];
+    if (token && token.startsWith("Bearer ")) {
+      token = token.slice(7, token?.length);
+      jwt.verify(token, tokenSec, (error, decoded) => {
+        if (error) {
+          res.status(401).json({
+            status: false,
+            message: error?.name ? error?.name : "Invalid Token",
+            error: `Invalid token | ${error?.message}`,
+          });
+        } else {
+          req["email"] = decoded?.email;
+          next();
+        }
+      });
+    } else {
+      res.status(401).json({
+        status: false,
+        message: "Token is missing",
+        error: "Token is missing",
+      });
+    }
+  } catch (error) {
+    res.status(401).json({
+      status: false,
+      message: error?.message ? error?.message : "Authentication failed",
+      error: `Authentication failed | ${error?.message}`,
+    });
+  }
+};
+module.exports = { userRegistration, userLogin, tokenVerification };

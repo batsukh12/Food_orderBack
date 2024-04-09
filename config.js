@@ -4,10 +4,14 @@ module.exports = {
     database: "Food_order",
     collections: {
       User: "User",
+      Restuarant: "restaurants",
+      Cart: "carts",
+      Food: "Foods",
     },
   },
   serverConfig: {
-    ip: "172.20.10.4",
+    // 172.20.10.4
+    ip: "192.168.1.211",
     port: 3001,
   },
   tokenSec: "very_secret",
