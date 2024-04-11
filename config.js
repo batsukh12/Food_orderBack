@@ -7,6 +7,7 @@ module.exports = {
       Restuarant: "restaurants",
       Cart: "carts",
       Food: "Foods",
+      Bookmark: "Bookmarks",
     },
   },
   serverConfig: {

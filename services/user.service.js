@@ -5,7 +5,7 @@ const getUserData = async (email) => {
   try {
     let userObj = await MongoDB.db
       .collection(mongoConfig.collections.User)
-      .findOne({ email: email });
+      .findOne({ email: email }, { password: 0 }); // Excluding the password field from the returned user object
     if (userObj) {
       return {
         status: true,
