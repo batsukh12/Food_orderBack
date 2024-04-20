@@ -54,16 +54,14 @@ const userLogin = async (user) => {
         user?.password,
         userObject?.password
       );
+      const userId = userObject._id;
       if (passVerified) {
-        let token = jwt.sign(
-          { username: userObject?.username, email: userObject?.email },
-          tokenSec,
-          { expiresIn: "1h" }
-        );
+        let token = jwt.sign({ userId }, tokenSec, { expiresIn: "0.5h" });
         return {
           status: true,
           message: "User login successful",
           data: token,
+          userId: userObject._id,
         };
       } else {
         return {

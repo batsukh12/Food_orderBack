@@ -1,11 +1,14 @@
 const { mongoConfig } = require("../config");
 const MongoDB = require("./mongoDB.service");
+const { ObjectId } = require("mongodb"); // Import ObjectId from the MongoDB driver
 
-const getUserData = async (email) => {
+const getUserData = async (userId) => {
   try {
+    const objectIdUserId = new ObjectId(userId);
+
     let userObj = await MongoDB.db
       .collection(mongoConfig.collections.User)
-      .findOne({ email: email }, { password: 0 }); // Excluding the password field from the returned user object
+      .findOne({ _id: objectIdUserId }, { password: 0 });
     if (userObj) {
       return {
         status: true,
