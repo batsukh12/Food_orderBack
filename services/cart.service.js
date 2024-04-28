@@ -1,21 +1,27 @@
 const { mongoConfig } = require("../config");
 const MongoDB = require("./mongoDB.service");
 
-const addToCart = async (foodId, userId) => {
+const addToCart = async (items, userId) => {
   try {
-    let addCart = await MongoDB.db
+    const newCartItem = {
+      ...items,
+      userId: userId,
+      date: new Date().toISOString(),
+    };
+
+    await MongoDB.db
       .collection(mongoConfig.collections.Cart)
-      .updateOne({ foodId, userId }, { $inc: { count: 1 } }, { upsert: true });
-    if (addCart?.modifiedCount > 0 || addCart?.upsertedCount > 0) {
-      return {
-        status: true,
-        message: "Add to cart successfully",
-      };
-    }
+      .insertOne(newCartItem);
+
+    return {
+      status: true,
+      message: "Item added to cart successfully.",
+    };
   } catch (err) {
+    // Return an error message if any error occurs during the process
     return {
       status: false,
-      message: "Cart add failed",
+      message: "Failed to add/update cart item.",
       error: err.message,
     };
   }

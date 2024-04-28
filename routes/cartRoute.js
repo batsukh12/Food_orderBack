@@ -6,11 +6,10 @@ const {
   getCartItems,
 } = require("../services/cart.service");
 
-router.post("/:foodId", async (req, res, next) => {
-  const { foodId } = req?.params;
-  const userId = req?.body;
-  // Call addToCart function with foodId and userId
-  const response = await addToCart(foodId, userId);
+router.post("/", async (req, res, next) => {
+  const { items, userId } = req.body;
+
+  const response = await addToCart(items, userId);
   res.json(response);
 });
 
