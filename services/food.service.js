@@ -27,5 +27,32 @@ const getFoodById = async (foodId) => {
     };
   }
 };
+const getFoods = async () => {
+  try {
+    let foods = await MongoDB.db
+      .collection(mongoConfig.collections.Food)
+      .find({})
+      .toArray();
 
-module.exports = { getFoodById };
+    if (foods.length > 0) {
+      return {
+        status: true,
+        message: "Foods found successfully",
+        data: foods,
+      };
+    } else {
+      return {
+        status: false,
+        message: "No Foods found",
+      };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: "Foods fetching failed",
+      error: `Foods fetching failed: ${error?.message}`,
+    };
+  }
+};
+
+module.exports = { getFoodById, getFoods };

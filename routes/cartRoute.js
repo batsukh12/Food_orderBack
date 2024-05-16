@@ -14,7 +14,7 @@ router.post("/", async (req, res, next) => {
 });
 
 router.get("/", async (req, res, next) => {
-  const { userId } = req?.body;
+  const { userId } = req.query;
 
   const response = await getCartItems(userId);
   res.json(response);

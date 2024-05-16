@@ -1,10 +1,11 @@
 const { mongoConfig } = require("../config");
 const MongoDB = require("./mongoDB.service");
+const { ObjectId } = require("mongodb"); // Import ObjectId from the MongoDB driver
 
 const addToCart = async (items, userId) => {
   try {
     const newCartItem = {
-      ...items,
+      food: items,
       userId: userId,
       date: new Date().toISOString(),
     };
@@ -18,7 +19,6 @@ const addToCart = async (items, userId) => {
       message: "Item added to cart successfully.",
     };
   } catch (err) {
-    // Return an error message if any error occurs during the process
     return {
       status: false,
       message: "Failed to add/update cart item.",
@@ -66,56 +66,59 @@ const removeFromCart = async (foodId, userId) => {
 };
 const getCartItems = async (userId) => {
   try {
-    let cartItems = await MongoDB.db
+    const cartItems = await MongoDB.db
       .collection(mongoConfig.collections.Cart)
       .aggregate([
         {
-          $match: {
-            userId: userId,
+          $match: { userId: userId },
+        },
+        {
+          $unwind: {
+            path: "$food",
+            preserveNullAndEmptyArrays: true,
           },
         },
         {
           $lookup: {
             from: "Foods",
-            localField: "foodId",
+            localField: "food.foodId",
             foreignField: "id",
-            as: "food",
+            as: "foodDetails",
           },
         },
         {
-          $unwind: {
-            path: "$food",
+          $addFields: {
+            foodDetails: { $arrayElemAt: ["$foodDetails", 0] },
+          },
+        },
+        {
+          $project: {
+            food: 1,
+            userId: 1,
+            date: 1,
           },
         },
       ])
       .toArray();
-    if (cartItems?.length > 0) {
-      let itemsTotal = cartItems
-        ?.map((cartItem) => cartItem?.food?.price * cartItem?.count)
-        ?.reduce((a, b) => parseFloat(a) + parseFloat(b));
-      let discount = 0;
+
+    if (cartItems.length > 0) {
       return {
         status: true,
-        message: "Cart items fetched Successfully",
-        data: {
-          cartItems,
-          metaData: {
-            itemsTotal,
-            discount,
-            grandTotal: itemsTotal - discount,
-          },
-        },
+        message: "Cart fetched successfully",
+        data: cartItems,
       };
     } else {
       return {
         status: false,
-        message: "Cart items not found",
+        message: "No cart found for this user",
+        data: cartItems, // Return data even if empty for consistency
       };
     }
   } catch (error) {
     return {
       status: false,
-      message: "Cart items fetched Failed",
+      message: "Failed to fetch cart items",
+      error: error.message, // Include the error message for debugging
     };
   }
 };
