@@ -1,5 +1,6 @@
 const { mongoConfig } = require("../config");
 const MongoDB = require("./mongoDB.service");
+const { ObjectId } = require("mongodb"); // Import ObjectId from the MongoDB driver
 
 const addAddress = async (address, userId) => {
   console.log("Address:", address);
@@ -67,5 +68,31 @@ const getAddress = async (userId) => {
     };
   }
 };
+const deleteAddress = async (addressId) => {
+  try {
+    const mark = await MongoDB.db
+      .collection(mongoConfig.collections.ADDRESS)
+      .deleteOne({ addressId });
 
-module.exports = { addAddress, getAddress };
+    if (mark?.deletedCount > 0) {
+      return {
+        status: true,
+        message: "Address removed successfully",
+        data: response.data,
+      };
+    } else {
+      return {
+        status: false,
+        message: "Address removal failed",
+      };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: "Address removal failed",
+      error: `Address removal failed: ${error.message}`,
+    };
+  }
+};
+
+module.exports = { addAddress, getAddress, deleteAddress };
